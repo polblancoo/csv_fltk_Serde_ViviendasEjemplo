@@ -89,15 +89,19 @@ impl  ViviendasDAO{
         //self.save(&datos);
         let f = self.save(&datos);
          match f {
-            Ok(_f)=>println!("ok"),
+            Ok(_f)=>{
+                
+                println!("ok Datos Guardados")
+            },
             Err(error)=>println!("fallo{}",error),
         };
     
     }
         fn save(&self, datos : &Vec<vivienda>) -> Result<() , Box<dyn Error> > {
+
         //let file_path = get_first_arg()?;
          let file_path =  Path::new("./src/cvs/personas.cvs");
-          
+         println!("Grabando datos en {:?}", file_path.to_str() );
         let mut wtr = csv::Writer::from_path(file_path)?;
        //let rec1 = vivienda {calle: "calle".to_string(),
         //                               numero: "numero".to_string(),
@@ -107,7 +111,6 @@ impl  ViviendasDAO{
        //                                banos: "banos".to_string(),
         //                               habitaciones: "habitaciones".to_string(),
         //                               tipovivienda: TipoVivienda::Casa};
-        println!("Grabando datos en {:?}", file_path.to_str() );
         println!("Datos es un ---Vector<vivienda> y contiene :  {:?} unidades.", datos.len());
         
         let mut  count = 0;
@@ -123,6 +126,7 @@ impl  ViviendasDAO{
        
     }
     pub fn save_and_refresh(&mut self, datos: &Vec<vivienda>) {
+        println!("dentro de save & refresh");
        let f = self.save(datos);
            match f{
           Ok(_f) => self.refresh(),

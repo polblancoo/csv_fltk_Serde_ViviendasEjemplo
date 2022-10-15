@@ -5,7 +5,7 @@ use crate::entidad::ViviendasDAO;
 mod entidad;
 mod Vista;
 fn main() {
-    println!("CONSTRUYENDO VIVIENDAS");
+    println!("Construyendo  VIVIENDAS");
     println!("----------------------"); 
     let mut  vivi = ViviendasDAO::new();
     let mut gui = Vista::GUI::new();

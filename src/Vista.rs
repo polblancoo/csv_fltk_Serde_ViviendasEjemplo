@@ -23,6 +23,7 @@ enum Message {
     Filter,
     Save,
     Search,
+    guardar_vivienda,
 }
 use crate::{ViviendasDAO, entidad::{ScreenOutput, TipoVivienda}};
 use crate::entidad::{vivienda};
@@ -51,7 +52,7 @@ pub struct GUI{
     update_button : Button,
     delete_button : Button,
     save_button : Button,
-    search_buton : Button
+  //  search_buton : Button
 }
 
 impl GUI {
@@ -65,7 +66,7 @@ impl GUI {
 
         let mut filter_input = Input::default().with_size( WIDGET_WIDTH * 4, WIDGET_HEIGHT)
         .with_pos(WIDGET_PADDING + WIDGET_WIDTH * 2, WIDGET_PADDING)
-        .with_label("Filtro:");
+        .with_label("Buscar por calle:");
 
         let mut list_browser = HoldBrowser::default()
         .with_pos(WIDGET_PADDING, filter_input.y() + filter_input.height() + WIDGET_PADDING,)
@@ -142,10 +143,7 @@ impl GUI {
             .right_of(&delete_button, WIDGET_PADDING)
             .with_label("Guardar");
         
-            let mut search_button = Button::default()
-            .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
-            .right_of(&delete_button, WIDGET_PADDING)
-            .with_label("Guardar");
+          
 
         let ViviendaDao = ViviendasDAO::new();
         let model = ViviendaDao.asVector();   
@@ -174,7 +172,7 @@ impl GUI {
             update_button : update_button,
             delete_button : delete_button,
             save_button :  save_button,
-            search_buton : search_button
+           
         }
         
 
@@ -189,6 +187,10 @@ impl GUI {
         self.list_browser.emit(self.sender, Message::Select);        
 
         self.sender.send(Message::Filter);
+        
+        self.save_button.emit(self.sender,Message::Save );
+        //self.save_button.emit(self.sender, Message::Save);
+        self.save_button.deactivate();
 
         self.create_button.emit(self.sender, Message::Create);
 
@@ -198,8 +200,8 @@ impl GUI {
         self.delete_button.emit(self.sender, Message::Delete);
         self.delete_button.deactivate();
 
-        self.save_button.emit(self.sender, Message::Save);
-
+        
+        
         
         self.wind.set_size(
             self.id_input.width() + self.list_browser.width() + WIDGET_PADDING*11,
@@ -226,9 +228,30 @@ impl GUI {
     
     }
 
-    pub fn show(&mut self) {
+   /* 
+   pub fn show(&mut self){
+
+    self.wind.end();
+    self.wind.show();
+    while self.app.wait() {
+        match self.receiver.recv() {
+
+            Some(Message::Update) => {},
+            Some(Message::Save) => {
+                println!("dentro de Message::Save) =>");
+            },
+            None => {},
+            _  => {} 
+        }
+    }
+        
+
+   }
+   */
+   pub fn show(&mut self) {
         self.wind.end();
         self.wind.show();
+        
         while self.app.wait() {
             match self.receiver.recv() {
                 Some(Message::Create) => {
@@ -251,7 +274,7 @@ impl GUI {
                                 self.save_button.activate();
 
 
-                }
+                },
                 Some(Message::Update) => {
                     if self.list_browser.value() > 0 {
                         let text_selection = self.list_browser.text(self.list_browser.value()).unwrap();
@@ -273,7 +296,7 @@ impl GUI {
                     } else {
                         println!("NO HAY ELEMENTO PARA MODIFICAR!!!");
                     }
-                }
+                },
                 Some(Message::Delete) => {
                     if self.list_browser.value() > 0 {
                         let text_selection = self.list_browser.text(self.list_browser.value()).unwrap();
@@ -290,7 +313,7 @@ impl GUI {
                                 self.update_button.activate();
                                 self.delete_button.deactivate();
                                 self.create_button.activate();
-                                self.save_button.activate();
+                                self.save_button.deactivate();
                             },
                             _ => {
                                 println!("ELEMENTO NO ENCONTRADO!!!");
@@ -299,19 +322,25 @@ impl GUI {
                     } else {
                         println!("NO HAY ELEMENTO PARA ELIMINAR!!!");
                     }
-                }
+                },
                 Some(Message::Save) => {
+                    println!("dentro de Message::Save) =>");
+                    //guardar datos
                     self.viviDAO.save_and_refresh(&self.model);
                     self.model = self.viviDAO.asVector();
                     self.clear_edit();
-                    self.sender.send(Message::Filter);
-                    self.sender.send(Message::Select);
-
                     self.update_button.activate();
                     self.delete_button.activate();
                     self.create_button.activate();
                     self.save_button.deactivate();
-                }
+
+                    //Emite los mensajes
+                    //self.sender.send(Message::guardar_vivienda);
+                    self.sender.send(Message::Filter);
+                    self.sender.send(Message::Select);
+
+                    
+                },
                 Some(Message::Select) => {
                     if self.list_browser.value() == 0 {
                         self.update_button.deactivate();
@@ -345,7 +374,7 @@ impl GUI {
                             } 
                         }                        
                     }
-                }
+                },
                 Some(Message::Filter) => {
                     let prefix = self.filter_input.value().to_lowercase();
                     let filter_empty = prefix.trim().eq_ignore_ascii_case("");
@@ -369,11 +398,11 @@ impl GUI {
                         }
                     }                                 
                     self.sender.send(Message::Select);    
-                }
-                None => {
-                    println!("Error")
                 },
-                _ => {println!("Error")}
+                None => {
+                   //nada
+                },
+                _ => {println!(".")}
             
             }
         }
